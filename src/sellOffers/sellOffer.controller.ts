@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { SellOffersService } from './sellOffer.service';
 import { UpdateSellOfferDto } from './dto/update-sellOffer.dto';
@@ -16,8 +17,13 @@ export class SellOffersController {
   constructor(private readonly sellOffersService: SellOffersService) {}
 
   @Post()
-  create(@Body() createSellOfferDto: CreateSellOfferDto) {
-    return this.sellOffersService.create(createSellOfferDto);
+  create(@Req() req: any, @Body() createSellOfferDto: CreateSellOfferDto) {
+    try {
+      const user = parseInt(req.user.userId);
+      return this.sellOffersService.create(user, createSellOfferDto);
+    } catch (err) {
+      throw err;
+    }
   }
 
   @Get()

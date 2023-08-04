@@ -1,40 +1,34 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UpdateSellOfferDto } from './dto/update-sellOffer.dto';
-import { SellOffer, CreateSellOfferDto } from 'models/sellOffer.entity';
-
-class SellOfferDb {
-  sellOffers: SellOffer[];
-  constructor() {
-    this.sellOffers = [];
-  }
-  lastIndex() {
-    if (this.sellOffers.length === 0) {
-      return 0;
-    }
-    return this.sellOffers.length - 1;
-  }
-  getSellOffer(id: number): SellOffer {
-    if (id > this.lastIndex()) {
-      throw new Error('Invalid id');
-    }
-    const sellOffer = this.sellOffers[id];
-    if (sellOffer.DeletedAt !== null) {
-      throw new Error('The sellOffer is deleted');
-    }
-    return sellOffer;
-  }
-}
+import {
+  SellOffer,
+  CreateSellOfferDto,
+  AuctionState,
+} from 'models/sellOffer.entity';
+import { Db } from 'src/shared/db/db.service';
+import { Client } from 'src/shared/clients/clients.service';
 
 @Injectable()
 export class SellOffersService {
-  db: SellOfferDb;
-  constructor() {
-    this.db = new SellOfferDb();
-  }
-  create(createSellOfferDto: CreateSellOfferDto): number {
-    const newSellOffer: SellOffer = new SellOffer(createSellOfferDto);
+  constructor(private client: Client, private db: Db) {}
+  async create(
+    userId: number,
+    createSellOfferDto: CreateSellOfferDto,
+  ): Promise<number> {
+    const ownerOfToken = await this.client.ownerOf(
+      createSellOfferDto.tokenId.toString(),
+    );
+    const user = this.db.getUser(userId);
+    if (ownerOfToken !== user.userAddr) {
+      throw new HttpException(
+        'You are not the owner of the nft',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    const newSellOffer: SellOffer = new SellOffer(createSellOfferDto, userId);
     this.db.sellOffers.push(newSellOffer);
-    return this.db.lastIndex();
+    console.log(this.db);
+    return this.db.lastSellIndex();
   }
 
   findAll() {
@@ -43,7 +37,7 @@ export class SellOffersService {
     });
   }
 
-  findByUserId(userId: string) {
+  findByUserId(userId: number) {
     return this.db.sellOffers.filter((sellOffer) => {
       return sellOffer.userId === userId;
     });
@@ -75,5 +69,22 @@ export class SellOffersService {
     } catch (err) {
       throw err;
     }
+  }
+  async close(userId: number, offerId: number) {
+    const offer = this.db.getSellOffer(offerId);
+    if (offer.auctionState !== AuctionState.Adjudicated) {
+      throw new HttpException(
+        'The offer can not be closed now',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    if (offer.highestBidder !== userId) {
+      throw new HttpException(
+        'You are not the adjudicated bidder',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    const res = await this._buyOffer(userId, offer);
+    return res;
   }
 }

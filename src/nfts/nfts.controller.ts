@@ -6,23 +6,26 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { NftsService } from './nfts.service';
-import { CreateNftDto } from './dto/create-nft.dto';
 import { UpdateNftDto } from './dto/update-nft.dto';
+import { CreateTokenDto } from 'models/token.entity';
 
 @Controller('nfts')
 export class NftsController {
   constructor(private readonly nftsService: NftsService) {}
 
   @Post()
-  create(@Body() createNftDto: CreateNftDto) {
-    return this.nftsService.create(createNftDto);
+  create(@Req() req: any, @Body() createTokenDto: CreateTokenDto) {
+    const user = parseInt(req.user.userId);
+    return this.nftsService.create(user, createTokenDto.amount);
   }
 
   @Get()
-  findAll() {
-    return this.nftsService.findAll();
+  findAll(@Req() req: any) {
+    const user = parseInt(req.user.userId);
+    return this.nftsService.findAll(user);
   }
 
   @Get(':id')
