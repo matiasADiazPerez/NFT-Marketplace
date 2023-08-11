@@ -1,44 +1,14 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UpdateBidDto } from './dto/update-bid.dto';
-import { Bid, CreateBidDto } from 'models/bids.entity';
+import { Bid, CreateBidDto, UpdateBidDto } from 'models/bids.entity';
 import { Db } from 'src/shared/db/db.service';
 import { Client } from 'src/shared/clients/clients.service';
-import { AuctionState, SellOffer } from 'models/sellOffer.entity';
+import { AuctionState } from 'models/sellOffer.entity';
+import { finishAuction } from 'src/common/tools/tools';
+import { HandleErr } from 'src/common/tools/errors';
 
 @Injectable()
 export class BidsService {
   constructor(private db: Db, private client: Client) {}
-  private async _buyOffer(userId: number, offer: SellOffer) {
-    const bidder = this.db.getUser(userId);
-    if (!bidder) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-    const buyInput = {
-      tokenId: offer.tokenId.toString(),
-      bid: offer.price.toString(),
-    };
-    const seller = this.db.getUser(offer.userId);
-    const approveToken = this.client.approveToken(
-      bidder.userKey,
-      process.env.FINISH_CONTRACT,
-      buyInput.bid,
-    );
-    const approveNft = this.client.approveNft(
-      seller.userKey,
-      process.env.FINISH_CONTRACT,
-      buyInput.tokenId,
-    );
-    await Promise.all([approveToken, approveNft]);
-    const ans = await this.client.finishAuction(
-      bidder.userKey,
-      seller.userKey,
-      buyInput,
-    );
-    if (ans['transactionHash']) {
-      offer.finishAuctionTx = String(ans['transactionHash']);
-    }
-    offer.auctionState = AuctionState.Closed;
-  }
 
   async create(createBidDto: CreateBidDto, userId: number) {
     try {
@@ -47,13 +17,18 @@ export class BidsService {
         throw new HttpException('Offer does not exist', HttpStatus.NOT_FOUND);
       }
       switch (offer.auctionState) {
-        case AuctionState.Adjudicated || AuctionState.Closed:
+        case AuctionState.Closed:
           throw new HttpException(
             'Offer does not accept more bids',
             HttpStatus.BAD_REQUEST,
           );
         case AuctionState.OnSale:
-          await this._buyOffer(userId, offer);
+          const bidder = this.db.getUser(userId);
+          if (!bidder) {
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+          }
+          const seller = this.db.getUser(offer.userId);
+          await finishAuction(seller, bidder, offer, this.client);
           break;
         case AuctionState.OnAuction:
           if (createBidDto.bidAmount < offer.currentBid) {
@@ -75,12 +50,15 @@ export class BidsService {
       this.db.bids.push(newBid);
       return this.db.lastBidIndex();
     } catch (err) {
-      throw err;
+      HandleErr(err);
     }
   }
 
-  findAll() {
+  findAll(user?: number) {
     return this.db.bids.filter((bid) => {
+      if (user) {
+        return bid.DeletedAt !== null && bid.userId == user;
+      }
       return bid.DeletedAt !== null;
     });
   }
@@ -89,26 +67,38 @@ export class BidsService {
     try {
       return this.db.getBid(id);
     } catch (err) {
-      throw err;
+      HandleErr(err);
     }
   }
 
-  update(id: number, updateBidDto: UpdateBidDto) {
+  update(id: number, user: number, updateBidDto: UpdateBidDto) {
     try {
       const bid = this.db.getBid(id);
+      if (bid.userId !== user) {
+        throw new HttpException(
+          'You cannot do this action',
+          HttpStatus.FORBIDDEN,
+        );
+      }
       const newBid = Object.assign(bid, updateBidDto);
       return newBid;
     } catch (err) {
-      throw err;
+      HandleErr(err);
     }
   }
-  remove(id: number) {
+  remove(user: number, id: number) {
     try {
       const bid = this.db.getBid(id);
+      if (bid.userId !== user) {
+        throw new HttpException(
+          'You cannot do this action',
+          HttpStatus.FORBIDDEN,
+        );
+      }
       bid.DeletedAt = new Date();
       return bid;
     } catch (err) {
-      throw err;
+      HandleErr(err);
     }
   }
 }

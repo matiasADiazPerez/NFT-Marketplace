@@ -1,10 +1,21 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { Min, IsInt, IsPositive, IsOptional } from 'class-validator';
 
 export class CreateBidDto {
-  @IsNumber()
+  @IsInt()
+  @Min(0)
   sellOfferId: number;
-  @IsNumber()
+  @IsPositive()
   bidAmount: number;
+}
+
+export class UpdateBidDto {
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  sellOfferId?: number;
+  @IsPositive()
+  @IsOptional()
+  bidAmount?: number;
 }
 
 export class Bid extends CreateBidDto {

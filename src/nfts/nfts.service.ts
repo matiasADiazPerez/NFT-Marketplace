@@ -1,5 +1,5 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UpdateNftDto } from './dto/update-nft.dto';
+import { Injectable } from '@nestjs/common';
+import { HandleErr } from 'src/common/tools/errors';
 import { Client } from 'src/shared/clients/clients.service';
 import { Db } from 'src/shared/db/db.service';
 
@@ -16,28 +16,34 @@ export class NftsService {
       );
       return response;
     } catch (err) {
-      return err;
+      HandleErr(err);
     }
   }
 
-  findAll(userId: number) {
-    const usr = this.db.getUser(userId);
-    if (!usr) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+  async findAllNft(userId: number) {
+    try {
+      console.log(userId);
+      const usr = this.db.getUser(userId);
+      const res = await this.client.getNfts(usr.userAddr);
+      return res;
+    } catch (err) {
+      HandleErr(err);
     }
-    const res = this.client.getNfts(usr.userAddr);
-    return res;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} nft`;
+  async findAllToken(userId: number) {
+    try {
+      console.log(userId);
+      const usr = this.db.getUser(userId);
+      const res = await this.client.getTokens(usr.userAddr);
+      return res;
+    } catch (err) {
+      HandleErr(err);
+    }
   }
-
-  update(id: number, updateNftDto: UpdateNftDto) {
-    return `This action updates a #${id} nft`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} nft`;
+  echo() {
+    const usrs = this.db.users;
+    console.log(usrs);
+    return usrs;
   }
 }

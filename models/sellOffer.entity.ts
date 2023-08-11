@@ -1,19 +1,19 @@
-import { IsNumber, IsOptional } from 'class-validator';
+import { IsInt, IsOptional, IsPositive, Min } from 'class-validator';
 
 export enum AuctionState {
   OnSale,
   OnAuction,
-  Adjudicated,
   Closed,
 }
 
 export class CreateSellOfferDto {
-  @IsNumber()
+  @IsInt()
+  @Min(0)
   tokenId: number;
-  @IsNumber()
+  @IsPositive()
   @IsOptional()
   price?: number;
-  @IsNumber()
+  @IsPositive()
   @IsOptional()
   minOffer?: number;
 }
@@ -39,4 +39,9 @@ export class SellOffer extends CreateSellOfferDto {
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }
+}
+
+export class CloseDto {
+  @Min(0)
+  sellOfferId: number;
 }

@@ -18,8 +18,7 @@ export class BidsController {
   @Post()
   create(@Body() createBidDto: CreateBidDto, @Req() req: any) {
     try {
-      const user = parseInt(req.user.userId);
-      return this.bidsService.create(createBidDto, user);
+      return this.bidsService.create(createBidDto, req.user.userId);
     } catch (err) {
       throw err;
     }
@@ -30,18 +29,30 @@ export class BidsController {
     return this.bidsService.findAll();
   }
 
+  @Get('me')
+  findByUser(@Req() req: any) {
+    return this.bidsService.findAll(req.user.userId);
+  }
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.bidsService.findOne(+id);
+    try {
+      return this.bidsService.findOne(+id);
+    } catch (err) {
+      throw err;
+    }
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBidDto: UpdateBidDto) {
-    return this.bidsService.update(+id, updateBidDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateBidDto: UpdateBidDto,
+    @Req() req: any,
+  ) {
+    return this.bidsService.update(+id, req.user.userId, updateBidDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.bidsService.remove(+id);
+  remove(@Param('id') id: string, @Req() req: any) {
+    return this.bidsService.remove(req.user.userId, +id);
   }
 }

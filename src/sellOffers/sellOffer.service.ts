@@ -7,6 +7,8 @@ import {
 } from 'models/sellOffer.entity';
 import { Db } from 'src/shared/db/db.service';
 import { Client } from 'src/shared/clients/clients.service';
+import { finishAuction } from 'src/common/tools/tools';
+import { HandleErr } from 'src/common/tools/errors';
 
 @Injectable()
 export class SellOffersService {
@@ -15,20 +17,23 @@ export class SellOffersService {
     userId: number,
     createSellOfferDto: CreateSellOfferDto,
   ): Promise<number> {
-    const ownerOfToken = await this.client.ownerOf(
-      createSellOfferDto.tokenId.toString(),
-    );
-    const user = this.db.getUser(userId);
-    if (ownerOfToken !== user.userAddr) {
-      throw new HttpException(
-        'You are not the owner of the nft',
-        HttpStatus.FORBIDDEN,
+    try {
+      const ownerOfToken = await this.client.ownerOf(
+        createSellOfferDto.tokenId.toString(),
       );
+      const user = this.db.getUser(userId);
+      if (ownerOfToken !== user.userAddr) {
+        throw new HttpException(
+          'You are not the owner of the nft',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+      const newSellOffer: SellOffer = new SellOffer(createSellOfferDto, userId);
+      this.db.sellOffers.push(newSellOffer);
+      return this.db.lastSellIndex();
+    } catch (err) {
+      HandleErr(err);
     }
-    const newSellOffer: SellOffer = new SellOffer(createSellOfferDto, userId);
-    this.db.sellOffers.push(newSellOffer);
-    console.log(this.db);
-    return this.db.lastSellIndex();
   }
 
   findAll() {
@@ -72,19 +77,39 @@ export class SellOffersService {
   }
   async close(userId: number, offerId: number) {
     const offer = this.db.getSellOffer(offerId);
-    if (offer.auctionState !== AuctionState.Adjudicated) {
+    if (offer.auctionState !== AuctionState.OnAuction) {
       throw new HttpException(
         'The offer can not be closed now',
         HttpStatus.FORBIDDEN,
       );
     }
-    if (offer.highestBidder !== userId) {
+    if (offer.userId !== userId) {
       throw new HttpException(
-        'You are not the adjudicated bidder',
+        'You are not allowed to do this action',
         HttpStatus.FORBIDDEN,
       );
     }
-    const res = await this._buyOffer(userId, offer);
+    const seller = this.db.getUser(userId);
+    const bidder = this.db.getUser(offer.highestBidder);
+    const res = await finishAuction(seller, bidder, offer, this.client);
     return res;
+  }
+
+  async cancel(userId: number, offerId: number) {
+    const offer = this.db.getSellOffer(offerId);
+    if (offer.auctionState !== AuctionState.OnAuction) {
+      throw new HttpException(
+        'The offer can not be closed now',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    if (offer.userId !== userId) {
+      throw new HttpException(
+        'You are not allowed to do this action',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+    offer.auctionState = AuctionState.Closed;
+    return 'success';
   }
 }

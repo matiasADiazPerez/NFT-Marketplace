@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ThirdwebSDK } from '@thirdweb-dev/sdk';
 import { Sepolia } from '@thirdweb-dev/chains';
 import { MetaMaskInpageProvider } from '@metamask/providers';
-import { BigNumber, Wallet } from 'ethers';
+import { BigNumber } from 'ethers';
 import { eth, Receipt, utils } from 'web3';
 
 declare global {
@@ -27,15 +27,11 @@ export class Client {
         { value: inputs.bid, type: 'uint256' },
       ),
     );
-    console.log('hash msg');
-    console.log(hashMessage);
     const signedMsg = eth.accounts.sign(hashMessage, privateKey);
     return signedMsg;
   }
   private async _getSellerSign(bidderSignedMsg: string, privateKey: string) {
     const hashMessage = utils.sha3(bidderSignedMsg);
-    console.log('hash msg 2');
-    console.log(hashMessage);
     const signedMsg = eth.accounts.sign(hashMessage, privateKey);
     return signedMsg;
   }
@@ -53,7 +49,6 @@ export class Client {
       const ans = await contract.call(method, input);
       return ans;
     } catch (err) {
-      console.log(err);
       throw err;
     }
   }
@@ -81,11 +76,20 @@ export class Client {
     const addr = amount
       ? process.env.ERC20_CONTRACT
       : process.env.ERC721_CONTRACT;
-    const input = amount ? [toAddress, amount] : [toAddress];
+    const input = amount
+      ? [toAddress, utils.toWei(amount, 'ether')]
+      : [toAddress];
     const res = await this._callContract(key, input, addr, 'mint');
     return res;
   }
-
+  async getTokens(userAddr: string): Promise<any> {
+    const balance: BigNumber = await this._readContract(
+      [userAddr],
+      process.env.ERC20_CONTRACT,
+      'balanceOf',
+    );
+    return utils.fromWei(balance.toBigInt(), 'ether');
+  }
   async getNfts(userAddr: string): Promise<any> {
     const balance: BigNumber = await this._readContract(
       [userAddr],
@@ -110,7 +114,7 @@ export class Client {
   async approveToken(key: string, toAddress: string, amount: string) {
     const res = this._callContract(
       key,
-      [toAddress, amount],
+      [toAddress, utils.toWei(amount, 'ether')],
       process.env.ERC20_CONTRACT,
       'approve',
     );

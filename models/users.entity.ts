@@ -1,30 +1,34 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { Min, IsString, IsInt } from 'class-validator';
 import { ethers } from 'ethers';
+import { utils } from 'web3';
 
 export class UserAuth {
-  @IsNumber()
+  @IsInt()
+  @Min(0)
   userId: number;
   @IsString()
   password: string;
 }
 
 export class CreateUserDto {
-  @IsOptional()
   @IsString()
-  userKey: string;
+  entropy: string;
   @IsString()
   password: string;
 }
 
-export class User extends CreateUserDto {
+export class User {
+  userKey: string;
+  password: string;
   userAddr: string;
   createdAt: Date;
   updatedAt: Date;
   DeletedAt?: Date;
 
   constructor(values: CreateUserDto) {
-    super();
-    const wallet = new ethers.Wallet(values.userKey);
+    const key = utils.sha3(values.entropy);
+    const wallet = new ethers.Wallet(key);
+    this.userKey = key;
     this.userAddr = wallet.address;
     Object.assign(this, values);
     this.createdAt = new Date();
