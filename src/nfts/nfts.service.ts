@@ -22,7 +22,6 @@ export class NftsService {
 
   async findAllNft(userId: number) {
     try {
-      console.log(userId);
       const usr = this.db.getUser(userId);
       const res = await this.client.getNfts(usr.userAddr);
       return res;
@@ -33,17 +32,11 @@ export class NftsService {
 
   async findAllToken(userId: number) {
     try {
-      console.log(userId);
       const usr = this.db.getUser(userId);
       const res = await this.client.getTokens(usr.userAddr);
       return res;
     } catch (err) {
       HandleErr(err);
     }
-  }
-  echo() {
-    const usrs = this.db.users;
-    console.log(usrs);
-    return usrs;
   }
 }

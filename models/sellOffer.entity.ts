@@ -18,6 +18,11 @@ export class CreateSellOfferDto {
   minOffer?: number;
 }
 
+export class UpdatePrice {
+  @IsPositive()
+  price: number;
+}
+
 export class SellOffer extends CreateSellOfferDto {
   userId: number;
   currentBid: number;

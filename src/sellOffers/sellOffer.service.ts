@@ -1,14 +1,14 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UpdateSellOfferDto } from './dto/update-sellOffer.dto';
 import {
   SellOffer,
   CreateSellOfferDto,
   AuctionState,
+  UpdatePrice,
 } from 'models/sellOffer.entity';
 import { Db } from 'src/shared/db/db.service';
 import { Client } from 'src/shared/clients/clients.service';
 import { finishAuction } from 'src/common/tools/tools';
-import { HandleErr } from 'src/common/tools/errors';
+import { HandleErr, NotOwner } from 'src/common/tools/errors';
 
 @Injectable()
 export class SellOffersService {
@@ -23,10 +23,7 @@ export class SellOffersService {
       );
       const user = this.db.getUser(userId);
       if (ownerOfToken !== user.userAddr) {
-        throw new HttpException(
-          'You are not the owner of the nft',
-          HttpStatus.FORBIDDEN,
-        );
+        throw new NotOwner('nft');
       }
       const newSellOffer: SellOffer = new SellOffer(createSellOfferDto, userId);
       this.db.sellOffers.push(newSellOffer);
@@ -38,7 +35,7 @@ export class SellOffersService {
 
   findAll() {
     return this.db.sellOffers.filter((sellOffer) => {
-      return sellOffer.DeletedAt !== null;
+      return !sellOffer.DeletedAt;
     });
   }
 
@@ -52,64 +49,72 @@ export class SellOffersService {
     try {
       return this.db.getSellOffer(id);
     } catch (err) {
-      throw err;
+      HandleErr(err);
     }
   }
 
-  update(id: number, updateSellOfferDto: UpdateSellOfferDto) {
+  updatePrice(userId: number, id: number, updateSellOfferDto: UpdatePrice) {
     try {
       const sellOffer = this.db.getSellOffer(id);
-      const newSellOffer = Object.assign(sellOffer, updateSellOfferDto);
-      return newSellOffer;
+      if (sellOffer.userId !== userId) {
+        throw new NotOwner('sell offer');
+      }
+      if (sellOffer.auctionState !== AuctionState.OnSale) {
+        throw new HttpException(
+          'The offer can not be updated',
+          HttpStatus.CONFLICT,
+        );
+      }
+      sellOffer.price = updateSellOfferDto.price;
+      return sellOffer;
     } catch (err) {
-      throw err;
+      HandleErr(err);
     }
   }
 
-  remove(id: number) {
+  remove(userId: number, id: number) {
     try {
       const sellOffer = this.db.getSellOffer(id);
+      if (sellOffer.userId !== userId) {
+        throw new NotOwner('sell offer');
+      }
       sellOffer.DeletedAt = new Date();
       return sellOffer;
     } catch (err) {
-      throw err;
+      HandleErr(err);
     }
   }
   async close(userId: number, offerId: number) {
-    const offer = this.db.getSellOffer(offerId);
-    if (offer.auctionState !== AuctionState.OnAuction) {
-      throw new HttpException(
-        'The offer can not be closed now',
-        HttpStatus.FORBIDDEN,
-      );
+    try {
+      const offer = this.db.getSellOffer(offerId);
+      if (offer.auctionState !== AuctionState.OnAuction) {
+        throw new HttpException(
+          'The offer can not be closed now',
+          HttpStatus.CONFLICT,
+        );
+      }
+      if (offer.userId !== userId) {
+        throw new NotOwner('sell offer');
+      }
+      const seller = this.db.getUser(userId);
+      const bidder = this.db.getUser(offer.highestBidder);
+      const res = await finishAuction(seller, bidder, offer, this.client);
+      return res;
+    } catch (err) {
+      HandleErr(err);
     }
-    if (offer.userId !== userId) {
-      throw new HttpException(
-        'You are not allowed to do this action',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-    const seller = this.db.getUser(userId);
-    const bidder = this.db.getUser(offer.highestBidder);
-    const res = await finishAuction(seller, bidder, offer, this.client);
-    return res;
   }
 
-  async cancel(userId: number, offerId: number) {
-    const offer = this.db.getSellOffer(offerId);
-    if (offer.auctionState !== AuctionState.OnAuction) {
-      throw new HttpException(
-        'The offer can not be closed now',
-        HttpStatus.FORBIDDEN,
-      );
+  cancel(userId: number, offerId: number) {
+    try {
+      const offer = this.db.getSellOffer(offerId);
+      if (offer.userId !== userId) {
+        throw new NotOwner('sell offer');
+      }
+      offer.auctionState = AuctionState.Closed;
+      return 'success';
+    } catch (err) {
+      HandleErr(err);
     }
-    if (offer.userId !== userId) {
-      throw new HttpException(
-        'You are not allowed to do this action',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-    offer.auctionState = AuctionState.Closed;
-    return 'success';
   }
 }

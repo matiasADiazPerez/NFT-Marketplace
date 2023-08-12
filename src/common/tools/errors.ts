@@ -18,6 +18,12 @@ export class EntityNotFound extends Error {
   }
 }
 
+export class NotOwner extends HttpException {
+  constructor(entity: string) {
+    super(`You are not the owner of the ${entity}`, HttpStatus.FORBIDDEN);
+  }
+}
+
 export const HandleErr = (
   err: InvalidId | DeletedEntity | HttpException | Error,
 ) => {
