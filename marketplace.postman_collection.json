@@ -1,0 +1,285 @@
+{
+	"info": {
+		"_postman_id": "28436793-e92e-4373-b514-db8a3376723a",
+		"name": "marketplace",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "6556908"
+	},
+	"item": [
+		{
+			"name": "Create nft",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {
+					"accept": true
+				}
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "default"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY5MjAwOTk2M30.bswo6W1phwSDz6h07_2BkfDuNp-ohe4QKE9-u5id3lo",
+						"type": "default"
+					},
+					{
+						"key": "Authorization",
+						"value": "",
+						"type": "default",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": \"20\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/nfts",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"nfts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"password\": \"123\",\n    \"entropy\": \"test1\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/user",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Auth User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userId\": 0,\n  \"password\": \"123\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/auth",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"auth"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List nfts",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjAsImlhdCI6MTY5MjAxMDE0N30.OlA610_lXGPa1HMGIcK3RHEwg2CMbsg2gijdV6vzcHQ",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "localhost:3000/nfts",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"nfts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Users",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjAsImlhdCI6MTY5MDg2NDYwNn0.vnBOlYIVF9NusaQ-achw_uXo_NzSPO_KybDyHGiSojM",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "localhost:3000/user",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Sell Offers",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjAsImlhdCI6MTY5MjAxMDE0N30.OlA610_lXGPa1HMGIcK3RHEwg2CMbsg2gijdV6vzcHQ",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "localhost:3000/sellOffers",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"sellOffers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Bid",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY5MjAxMDYxN30.K4Dp8vnDAr_aVUXss6hiNQin4ogJjJsruBaI07ae_GQ",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"bidAmount\": 0.8,\n    \"sellOfferId\": 0\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/bids",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"bids"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create sell offer",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjAsImlhdCI6MTY5MjAxMDE0N30.OlA610_lXGPa1HMGIcK3RHEwg2CMbsg2gijdV6vzcHQ",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"tokenId\": 112\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/sellOffers",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"sellOffers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Close Auction",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjAsImlhdCI6MTY5MjAxMDg3N30.U19Qm_KJX3D7zABYd45cAbZVeSOJ8WNtwETisiOaVAQ",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"sellOfferId\": 0\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:3000/sellOffers/close",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"sellOffers",
+						"close"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
