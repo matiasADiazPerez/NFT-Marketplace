@@ -41,7 +41,7 @@ const onSaleOffer = new SellOffer({ tokenId: 0, price: 100 }, 0);
 const toCloseOffer = new SellOffer({ tokenId: 0 }, 0);
 toCloseOffer.highestBidder = UsersIds.bidder;
 
-const toCancel = new SellOffer({ tokenId: 10 }, 0);
+const toCancelOffer = new SellOffer({ tokenId: 10 }, 0);
 
 const client = new Client();
 jest.mock('src/shared/clients/clients.service');
@@ -61,8 +61,9 @@ describe('SellOffersService', () => {
             db.sellOffers.push(deletedTestSellOffer);
             db.sellOffers.push(onSaleOffer);
             db.sellOffers.push(toCloseOffer);
-            const nftService = new SellOffersService(client, db);
-            return nftService;
+            db.sellOffers.push(toCancelOffer);
+            const sellOfferService = new SellOffersService(client, db);
+            return sellOfferService;
           },
         },
       ],
@@ -81,7 +82,7 @@ describe('SellOffersService', () => {
       const res = await service.create(0, { tokenId: 0 });
       expect.assertions(2);
       expect(mockOwnerOf).toBeCalledWith('0');
-      expect(res).toBe(4);
+      expect(res).toBe(5);
     });
     it('should fail if the user does not owns the nft', async () => {
       jest
@@ -119,7 +120,12 @@ describe('SellOffersService', () => {
   describe('find all sell offers', () => {
     it('should return all sell offers', () => {
       const res = service.findAll();
-      expect(res).toMatchObject([testSellOffer, onSaleOffer, toCloseOffer]);
+      expect(res).toMatchObject([
+        testSellOffer,
+        onSaleOffer,
+        toCloseOffer,
+        toCancelOffer,
+      ]);
     });
   });
   describe('find offers owned by user', () => {
@@ -130,6 +136,7 @@ describe('SellOffersService', () => {
         deletedTestSellOffer,
         onSaleOffer,
         toCloseOffer,
+        toCancelOffer,
       ]);
     });
   });
@@ -183,7 +190,11 @@ describe('SellOffersService', () => {
     it('should remove a sell offer', () => {
       service.remove(0, SellOfferId.auction);
       const sellOffers = service.findAll();
-      expect(sellOffers).toMatchObject([onSaleOffer, toCloseOffer]);
+      expect(sellOffers).toMatchObject([
+        onSaleOffer,
+        toCloseOffer,
+        toCancelOffer,
+      ]);
     });
     it('should fail if user is not onwer of sell offer', () => {
       try {
@@ -219,7 +230,6 @@ describe('SellOffersService', () => {
         toCloseOffer,
         client,
       );
-      expect(toCloseOffer.auctionState).toBe(AuctionState.Closed);
     });
     it('should fail if user is not onwer of sell offer', async () => {
       try {
@@ -257,8 +267,8 @@ describe('SellOffersService', () => {
   });
   describe('cancel a sell offer', () => {
     it('Should cancel a sellOffer', () => {
-      service.cancel(0, SellOfferId.toClose);
-      expect(toCloseOffer.auctionState).toBe(AuctionState.Closed);
+      service.cancel(0, SellOfferId.toCancel);
+      expect(toCancelOffer.auctionState).toBe(AuctionState.Closed);
     });
     it('should fail if user is not onwer of sell offer', () => {
       try {

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto, User } from 'models/users.entity';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { Db } from 'src/shared/db/db.service';
 import * as sha256 from 'crypto-js/sha256';
 
@@ -28,20 +27,6 @@ export class UserService {
   findOne(id: number) {
     try {
       return this.db.getUser(id);
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    try {
-      const sellOffer = this.db.getSellOffer(id);
-      sellOffer.DeletedAt = new Date();
-      return sellOffer;
     } catch (err) {
       throw err;
     }
