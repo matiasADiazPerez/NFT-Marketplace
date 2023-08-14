@@ -67,4 +67,4 @@ This repository includes unit tests for the main modules: `sellOffers`, `bids`, 
 ```bash
 npm test
 ```
-
+This [postman json](marketplace.postman_collection.json) contains all the request used in the demo. Those already have some funds in the Sepolia testnet
