@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto, User } from 'models/users.entity';
 import { Db } from 'src/shared/db/db.service';
 import * as sha256 from 'crypto-js/sha256';
+import { HandleErr } from 'src/common/errors';
 
 @Injectable()
 export class UserService {
@@ -19,6 +20,7 @@ export class UserService {
       return user.DeletedAt !== null;
     });
     return users.map((usr) => {
+      /* eslint-disable  @typescript-eslint/no-unused-vars */
       const { password, userKey, ...usrInfo } = usr;
       return usrInfo;
     });
@@ -28,7 +30,7 @@ export class UserService {
     try {
       return this.db.getUser(id);
     } catch (err) {
-      throw err;
+      throw HandleErr(err);
     }
   }
 }

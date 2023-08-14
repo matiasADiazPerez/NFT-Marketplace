@@ -1,73 +1,54 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# MarketPlace Challege
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Welcome to the NFT MarketPlace API repository. This API allows users to create sell offers and auctions for NFTs (Non-Fungible Tokens) and enables other users to place bids or purchase these NFTs using ERC20 tokens. 
+The API is built using the NestJS framework and utilizes the ThirdWeb SDK to connect to the Sepolia test net and interact with the smart contracts MockERC721, MockERC20, and Marketplace.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Getting Started
 
-## Description
+To start the application, follow these steps:
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+1. Clone this repository to your local machine.
+2. Install the required dependencies by running:
+```
+npm install
+```
+3. Configure the necessary environment variables for connecting to the Sepolia test net and contract addresses by create a .env:
+```
+API_KEY=${ThirdWeb SECRET KEY}
+CLIENT_KEY=${ThirdWeb CLIENT KEY}
+JWT_SECRET='a secret string'
+ERC721_CONTRACT='0xFCE9b92eC11680898c7FE57C4dDCea83AeabA3ff'
+ERC20_CONTRACT='0xbd65c58D6F46d5c682Bf2f36306D461e3561C747'
+FINISH_CONTRACT='0x597C9bC3F00a4Df00F85E9334628f6cDf03A1184'
+```
+To get the `API_KEY` and `CLIENT_KEY` of the ThirdWeb API please follow [these instructions](https://portal.thirdweb.com/api-keys#creating--managing-your-api-keys-via-the-dashboard-settings-tab). It may seem annoying but with this we don't need an infura or local eth node.
 
-## Installation
-
-```bash
-$ npm install
+4. Start the application using the command:
+```
+npm start
 ```
 
-## Running the app
+## Note
+
+* The smart contract MockERC20, MockERC721 and Marketplace were uploaded to an ipfs service by thirdweb to get the ABI in the API. Sometimes these ipfs service may fail. If this is the case a warning will be printed. Retry the request until the ipfs node works.
+* Ideally no wallet key should be stored in the app db. But this is a simple backend solution. A production ready solution should store the users keys in a secret manager service. Or use a wallet provider and call the contracts in the client side (frontend).
+* The auction and sales are represented by a entity called `SellOffer`. A `SellOffer` have a internal state that indicates what actions can be done to it:
+    * OnSale: Indicates that the nft is on sale and can be purchase immediately.
+    * OnAuction: Indicates that the nft is on auction and bids can be placed. Only the owner can close the auction.
+    * Closed: Indicates that the nft have been already transfered. 
+## Usage
+
+- Creating Sell Offers: Users can create sell offers for their NFTs. Specify the NFT, price, and other relevant details.
+
+- Placing Bids: Users can place bids on NFTs that are up for auction. Bids are made using ERC20 tokens.
+
+- Purchasing NFTs: Users can purchase NFTs that are listed for sale using ERC20 tokens.
+
+## Testing
+
+This repository includes unit tests for the main modules: `sellOffers`, `bids`, and `nfts`. To run the unit tests, use the following command:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm test
 ```
 
-## Test
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).

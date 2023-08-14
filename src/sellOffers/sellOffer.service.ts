@@ -8,11 +8,12 @@ import {
 import { Db } from 'src/shared/db/db.service';
 import { Client } from 'src/shared/clients/clients.service';
 import { finishAuction } from 'src/common/tools/tools';
-import { HandleErr, NotOwner } from 'src/common/tools/errors';
+import { HandleErr, NotOwner } from 'src/common/errors';
 
 @Injectable()
 export class SellOffersService {
   constructor(private client: Client, private db: Db) {}
+  /** Creates a sellOffer. if price is present, asumes is a sale offer. Otherwise asumes is an auction */
   async create(
     userId: number,
     createSellOfferDto: CreateSellOfferDto,
@@ -52,7 +53,7 @@ export class SellOffersService {
       HandleErr(err);
     }
   }
-
+  /** updates the price of an open sale offer */
   updatePrice(userId: number, id: number, updateSellOfferDto: UpdatePrice) {
     try {
       const sellOffer = this.db.getSellOffer(id);
@@ -71,7 +72,7 @@ export class SellOffersService {
       HandleErr(err);
     }
   }
-
+  /** removes a non closed offer */
   remove(userId: number, id: number) {
     try {
       const sellOffer = this.db.getSellOffer(id);
@@ -84,6 +85,7 @@ export class SellOffersService {
       HandleErr(err);
     }
   }
+  /** finish an auction */
   async close(userId: number, offerId: number) {
     try {
       const offer = this.db.getSellOffer(offerId);
@@ -104,7 +106,7 @@ export class SellOffersService {
       HandleErr(err);
     }
   }
-
+  /** cancels a non closed offer*/
   cancel(userId: number, offerId: number) {
     try {
       const offer = this.db.getSellOffer(offerId);

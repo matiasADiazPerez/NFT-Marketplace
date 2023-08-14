@@ -17,7 +17,9 @@ interface FinishAuctionInput {
 }
 
 @Injectable()
+/** Client used to call the smart contract in the Sepolia test network */
 export class Client {
+  /** Internal method that creates the bidder signature of the transaction */
   private async _getBidderSign(inputs: FinishAuctionInput, privateKey: string) {
     const hashMessage = utils.sha3(
       utils.encodePacked(
@@ -30,11 +32,13 @@ export class Client {
     const signedMsg = eth.accounts.sign(hashMessage, privateKey);
     return signedMsg;
   }
+  /** Internal method that creates the seller signature of the transaction */
   private async _getSellerSign(bidderSignedMsg: string, privateKey: string) {
     const hashMessage = utils.sha3(bidderSignedMsg);
     const signedMsg = eth.accounts.sign(hashMessage, privateKey);
     return signedMsg;
   }
+  /** Internal method that calls a write method of a given contract with the given inputs */
   private async _callContract(
     privateKey: string,
     input: Array<any>,
@@ -52,7 +56,7 @@ export class Client {
       throw err;
     }
   }
-
+  /** Internal method that calls a read method of a given contract */
   private async _readContract(
     input: Array<any>,
     contractAddr: string,
@@ -63,7 +67,7 @@ export class Client {
     const ans = await contract.call(method, input);
     return ans;
   }
-
+  /** Calls the ownerOf method of the MockERC721 contract to know the owner of a nft*/
   async ownerOf(tokenId: string): Promise<any> {
     const res = await this._readContract(
       [tokenId],
@@ -72,6 +76,7 @@ export class Client {
     );
     return res;
   }
+  /** Calls the method of the MockERC721 contract to mint a nft or the MockERC20 contract to mint the `amount` tokens */
   async mint(key: string, toAddress: string, amount?: string): Promise<any> {
     const addr = amount
       ? process.env.ERC20_CONTRACT
@@ -82,6 +87,7 @@ export class Client {
     const res = await this._callContract(key, input, addr, 'mint');
     return res;
   }
+  /** Gets the amount of ERC20 tokens owned by a user */
   async getTokens(userAddr: string): Promise<any> {
     const balance: BigNumber = await this._readContract(
       [userAddr],
@@ -90,6 +96,7 @@ export class Client {
     );
     return utils.fromWei(balance.toBigInt(), 'ether');
   }
+  /** Gets the ids of the ERC721 nfts owned by a user */
   async getNfts(userAddr: string): Promise<any> {
     const balance: BigNumber = await this._readContract(
       [userAddr],
@@ -99,18 +106,20 @@ export class Client {
     const promises = Array.from(
       { length: balance.toNumber() },
       async (_, i) => {
-        const promise = await this._readContract(
+        const promise: Promise<BigNumber> = this._readContract(
           [userAddr, i.toString()],
           process.env.ERC721_CONTRACT,
           'tokenOfOwnerByIndex',
         );
-        console.log(promise);
+
         return promise;
       },
     );
-    const allRes = Promise.all(promises);
+    const allResBigNumber = await Promise.all(promises);
+    const allRes = allResBigNumber.map((value) => value.toNumber());
     return allRes;
   }
+  /** Approves the `amount` of tokens to be transfered to the `toAddress` address */
   async approveToken(key: string, toAddress: string, amount: string) {
     const res = this._callContract(
       key,
@@ -120,6 +129,7 @@ export class Client {
     );
     return res;
   }
+  /** Approves the transfer of a nft to the `toAddress` address */
   async approveNft(key: string, toAddress: string, tokenId: string) {
     const res = this._callContract(
       key,
@@ -129,6 +139,7 @@ export class Client {
     );
     return res;
   }
+  /** calls the finisAuction method of the Marketplace contract to execute the transaction of nft for tokens. */
   async finishAuction(
     bidderKey: string,
     sellerKey: string,

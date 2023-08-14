@@ -4,12 +4,16 @@ import { Db } from 'src/shared/db/db.service';
 import { Client } from 'src/shared/clients/clients.service';
 import { AuctionState } from 'models/sellOffer.entity';
 import { finishAuction } from 'src/common/tools/tools';
-import { HandleErr, NotOwner } from 'src/common/tools/errors';
+import { HandleErr, NotOwner } from 'src/common/errors';
 
 @Injectable()
 export class BidsService {
   constructor(private client: Client, private db: Db) {}
-
+  /**
+   * the creation bid services.
+   * If the sell offer is a sale, it executes the exchange inmediatly.
+   * If is an auction, place the bid and update the highest bidder of the offer
+   */
   async create(createBidDto: CreateBidDto, userId: number) {
     try {
       const offer = this.db.getSellOffer(createBidDto.sellOfferId);
@@ -50,7 +54,9 @@ export class BidsService {
       HandleErr(err);
     }
   }
-
+  /** Finds all non deleted bids.
+   * If a user id is provided, returns only the bids owned by that user id
+   */
   findAll(user?: number) {
     return this.db.bids.filter((bid) => {
       if (user) {
@@ -60,6 +66,7 @@ export class BidsService {
     });
   }
 
+  /** Finds the bid with the id provided. */
   findOne(id: number) {
     try {
       return this.db.getBid(id);
@@ -67,7 +74,10 @@ export class BidsService {
       HandleErr(err);
     }
   }
-
+  /** removes a bid only if the sellOffer is an ongoing auction.
+   * If the deleted bid was the highest one, the service will restore the highest bidder and current bid of the offer to the previous highest bid.
+   * If there are no more bids, it restore the values to default.
+   */
   remove(user: number, id: number) {
     try {
       const bid = this.db.getBid(id);

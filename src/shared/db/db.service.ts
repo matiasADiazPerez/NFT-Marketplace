@@ -3,13 +3,10 @@ import { Bid } from 'models/bids.entity';
 import { SellOffer } from 'models/sellOffer.entity';
 import { EntityType as ET } from 'models/entityType.interface';
 import { User } from 'models/users.entity';
-import {
-  DeletedEntity,
-  EntityNotFound,
-  InvalidId,
-} from 'src/common/tools/errors';
+import { DeletedEntity, EntityNotFound, InvalidId } from 'src/common/errors';
 
 @Injectable()
+/** represents the db of the application. Every `table` is an Array of the table type */
 export class Db {
   bids: Bid[];
   sellOffers: SellOffer[];
@@ -27,7 +24,7 @@ export class Db {
     }
     return db.length - 1;
   }
-
+  /** returns safely the entity queried. It garcefully fails if the query is not possible */
   private _getEntity<T extends ET>(id: number, db: T[], entityName: string): T {
     if (id > this._lastIndex(db) || id < 0) {
       throw new InvalidId();

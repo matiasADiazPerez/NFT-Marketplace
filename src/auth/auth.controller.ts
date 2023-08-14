@@ -8,6 +8,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @Public()
   @Post()
+  /** `POST /auth` logs in a user, returns a JWT */
   login(@Body() userAuth: UserAuth) {
     try {
       return this.authService.login(userAuth);
