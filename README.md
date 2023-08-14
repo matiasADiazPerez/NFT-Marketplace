@@ -3,6 +3,12 @@
 Welcome to the NFT MarketPlace API repository. This API allows users to create sell offers and auctions for NFTs (Non-Fungible Tokens) and enables other users to place bids or purchase these NFTs using ERC20 tokens. 
 The API is built using the NestJS framework and utilizes the ThirdWeb SDK to connect to the Sepolia test net and interact with the smart contracts MockERC721, MockERC20, and Marketplace.
 
+This challenge was created with: 
+* Linux ubuntu `20.04 x86_64`
+* nodejs version: `v20.3.1`
+* npm version: `9.6.7`
+
+
 ## Getting Started
 
 To start the application, follow these steps:

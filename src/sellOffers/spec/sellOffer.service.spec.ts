@@ -4,7 +4,7 @@ import { SellOffersService } from '../sellOffer.service';
 import { Db } from 'src/shared/db/db.service';
 import { Client } from 'src/shared/clients/clients.service';
 import { User } from 'models/users.entity';
-import { DeletedEntity, InvalidId, NotOwner } from 'src/common/tools/errors';
+import { DeletedEntity, InvalidId, NotOwner } from 'src/common/errors';
 import { AuctionState, SellOffer } from 'models/sellOffer.entity';
 import * as toSpyModule from 'src/common/tools/tools';
 
@@ -71,10 +71,10 @@ describe('SellOffersService', () => {
 
     service = module.get<SellOffersService>(SellOffersService);
   });
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
   describe('Create a sell offer', () => {
-    it('should be defined', () => {
-      expect(service).toBeDefined();
-    });
     it('should create a sell offer', async () => {
       const mockOwnerOf = jest
         .spyOn(Client.prototype, 'ownerOf')

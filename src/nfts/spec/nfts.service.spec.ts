@@ -4,7 +4,7 @@ import { User } from 'models/users.entity';
 import { Client } from 'src/shared/clients/clients.service';
 import { Db } from 'src/shared/db/db.service';
 import { NftsService } from '../nfts.service';
-import { InvalidId } from 'src/common/tools/errors';
+import { InvalidId } from 'src/common/errors';
 import { BigNumber } from 'ethers';
 
 const SUCCESS = 'success';
@@ -38,10 +38,10 @@ describe('NftsService', () => {
     service = module.get<NftsService>(NftsService);
   });
 
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
   describe('Create nfts and tokens', () => {
-    it('should be defined', () => {
-      expect(service).toBeDefined();
-    });
     it('should create a nft', async () => {
       const mockMint = jest
         .spyOn(Client.prototype, 'mint')

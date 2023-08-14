@@ -13,7 +13,8 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest"
+    "test": "jest --verbose",
+    "doc": "npx @compodoc/compodoc -p tsconfig.json -s"
   },
   "dependencies": {
     "@metamask/providers": "^11.1.0",
@@ -68,6 +69,7 @@
     "moduleNameMapper": {
       "models/(.*)": "<rootDir>/../models/$1",
       "src/shared/(.*)": "<rootDir>/shared/$1",
+      "src/common/(.*)": "<rootDir>/common/$1",
       "src/common/tools/(.*)": "<rootDir>/common/tools/$1"
     },
     "testRegex": ".*\\.spec\\.ts$",
