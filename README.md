@@ -18,7 +18,7 @@ To start the application, follow these steps:
 ```
 npm install
 ```
-3. Configure the necessary environment variables for connecting to the Sepolia test net and contract addresses by create a .env:
+3. Configure the necessary environment variables for connecting to the Sepolia test net and contract addresses by creating a .env:
 ```
 API_KEY=${ThirdWeb SECRET KEY}
 CLIENT_KEY=${ThirdWeb CLIENT KEY}
